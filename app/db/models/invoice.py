@@ -1,4 +1,4 @@
-from sqlalchemy import Column, String, Float, ForeignKey, Boolean, Date, Enum, Integer, Text, JSON
+from sqlalchemy import Column, String, Float, ForeignKey, Boolean, Date, Enum, Integer, Text, DateTime
 from sqlalchemy.orm import relationship
 import enum
 from datetime import datetime
@@ -37,6 +37,7 @@ class Invoice(Base):
     id = Column(String, primary_key=True, default=lambda: str(uuid.uuid4()))
     business_id = Column(String, ForeignKey("business_profiles.id"), nullable=False, index=True)
     client_id = Column(String, ForeignKey("clients.id"), nullable=False, index=True)
+    category_id = Column(String, ForeignKey("categories.id"), nullable=True, index=True)
     invoice_number = Column(String(50), nullable=False, index=True, unique=True)
     reference_number = Column(String(100), nullable=True)
     purchase_order_number = Column(String(100), nullable=True)
@@ -63,19 +64,20 @@ class Invoice(Base):
     recurring_frequency = Column(Enum(RecurringFrequency), nullable=True)
     recurring_end_date = Column(Date, nullable=True)
     parent_invoice_id = Column(String, ForeignKey("invoices.id"), nullable=True)
-    sent_at = Column(Date, nullable=True)
-    viewed_at = Column(Date, nullable=True)
-    paid_at = Column(Date, nullable=True)
-    cancelled_at = Column(Date, nullable=True)
+    sent_at = Column(DateTime, nullable=True)
+    viewed_at = Column(DateTime, nullable=True)
+    paid_at = Column(DateTime, nullable=True)
+    cancelled_at = Column(DateTime, nullable=True)
     pdf_url = Column(Text, nullable=True)
     public_url = Column(Text, nullable=True)
     created_by = Column(String, ForeignKey("users.id"), nullable=False, index=True)
-    created_at = Column(Date, default=datetime.utcnow, nullable=False, index=True)
-    updated_at = Column(Date, default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False)
+    created_at = Column(DateTime, default=datetime.utcnow, nullable=False, index=True)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False)
 
     # Relationships
     business = relationship("BusinessProfile", back_populates="invoices")
     client = relationship("Client", back_populates="invoices")
+    category = relationship("Category", back_populates="invoices")
     creator = relationship("User", foreign_keys=[created_by])
     items = relationship("InvoiceItem", back_populates="invoice", cascade="all, delete-orphan")
     payments = relationship("Payment", back_populates="invoice", cascade="all, delete-orphan")
@@ -99,8 +101,8 @@ class InvoiceItem(Base):
     discount_amount = Column(Float, default=0.0)
     line_total = Column(Float, nullable=False)
     sort_order = Column(Integer, default=0)
-    created_at = Column(Date, default=datetime.utcnow, nullable=False)
-    updated_at = Column(Date, default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False)
+    created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False)
 
     # Relationships
     invoice = relationship("Invoice", back_populates="items")
