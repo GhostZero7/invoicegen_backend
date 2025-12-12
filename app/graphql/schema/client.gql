@@ -1,0 +1,81 @@
+enum ClientType {
+  INDIVIDUAL
+  COMPANY
+}
+
+enum ClientStatus {
+  ACTIVE
+  INACTIVE
+  BLOCKED
+}
+
+type Client {
+  id: ID!
+  businessId: ID!
+  clientType: ClientType!
+  companyName: String
+  firstName: String
+  lastName: String
+  email: String!
+  phone: String
+  mobile: String
+  website: String
+  taxId: String
+  vatNumber: String
+  paymentTerms: String
+  creditLimit: Float
+  currency: String!
+  language: String!
+  notes: String
+  status: ClientStatus!
+  createdAt: Date!
+  updatedAt: Date!
+}
+
+input CreateClientInput {
+  businessId: ID!
+  clientType: ClientType!
+  companyName: String
+  firstName: String
+  lastName: String
+  email: String!
+  phone: String
+  mobile: String
+  website: String
+  taxId: String
+  paymentTerms: String
+  currency: String
+}
+
+input UpdateClientInput {
+  companyName: String
+  firstName: String
+  lastName: String
+  email: String
+  phone: String
+  mobile: String
+  website: String
+  taxId: String
+  vatNumber: String
+  paymentTerms: String
+  creditLimit: Float
+  notes: String
+  status: ClientStatus
+}
+
+extend type Query {
+  client(id: ID!): Client
+  clients(
+    businessId: ID
+    skip: Int = 0
+    limit: Int = 10
+    status: ClientStatus
+    clientType: ClientType
+  ): [Client!]!
+}
+
+extend type Mutation {
+  createClient(input: CreateClientInput!): Client!
+  updateClient(id: ID!, input: UpdateClientInput!): Client!
+  deleteClient(id: ID!): Boolean!
+}

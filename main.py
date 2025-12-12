@@ -1,7 +1,17 @@
+from datetime import datetime
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from strawberry.fastapi import GraphQLRouter
 from app.routers.router import api_router
 from app.db.database import Base, engine
+from app.graphql import schema, get_context
+
+# Import all models to ensure they're registered
+from app.db.models import *
+
+# Configure SQLAlchemy registry to resolve relationships
+from sqlalchemy.orm import configure_mappers
+configure_mappers()
 
 # Create tables
 Base.metadata.create_all(bind=engine)
@@ -23,7 +33,15 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# GraphQL router with context and GraphiQL interface
+graphql_app = GraphQLRouter(
+    schema,
+    context_getter=get_context,
+    graphiql=True,  # Enable GraphiQL web interface
+)
+
 # Include routers
+app.include_router(graphql_app, prefix="/graphql")
 app.include_router(api_router)
 
 @app.get("/")

@@ -39,4 +39,4 @@ class Payment(Base):
 
     # Relationships
     invoice = relationship("Invoice", back_populates="payments")
-    creator = relationship("User", foreign_keys=[created_by])
+    creator = relationship("User", foreign_keys=[created_by], back_populates="payments_created")

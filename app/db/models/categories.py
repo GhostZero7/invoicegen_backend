@@ -29,6 +29,5 @@ class Category(Base):
     # Relationships
     business = relationship("BusinessProfile", back_populates="categories")
     parent = relationship("Category", remote_side=[id], backref="subcategories")
-    products = relationship("Product", back_populates="category")
     invoices = relationship("Invoice", back_populates="category")
     expenses = relationship("Expense", back_populates="category")

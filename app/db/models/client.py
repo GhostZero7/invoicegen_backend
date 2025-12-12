@@ -41,11 +41,10 @@ class Client(Base):
 
     # Relationships
     business = relationship("BusinessProfile", back_populates="clients")
-    addresses = relationship("Address", back_populates="client")
     contacts = relationship("ClientContact", back_populates="client", cascade="all, delete-orphan")
     invoices = relationship("Invoice", back_populates="client")
-    quotes = relationship("Quote", back_populates="client")
     expenses = relationship("Expense", back_populates="client")
+    quotes = relationship("Quote", back_populates="client")
 
 class ClientContact(Base):
     __tablename__ = "client_contacts"

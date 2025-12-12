@@ -28,15 +28,4 @@ class Address(Base):
     created_at = Column(Date, default=datetime.utcnow, nullable=False)
     updated_at = Column(Date, default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False)
 
-    # Relationships (polymorphic)
-    user = relationship("User", back_populates="addresses", 
-                       foreign_keys=[addressable_id],
-                       primaryjoin="and_(Address.addressable_type=='user', Address.addressable_id==User.id)")
-    
-    business = relationship("BusinessProfile", back_populates="addresses",
-                          foreign_keys=[addressable_id],
-                          primaryjoin="and_(Address.addressable_type=='business_profile', Address.addressable_id==BusinessProfile.id)")
-    
-    client = relationship("Client", back_populates="addresses",
-                         foreign_keys=[addressable_id],
-                         primaryjoin="and_(Address.addressable_type=='client', Address.addressable_id==Client.id)")
+    # Polymorphic relationships - no back_populates since we're using generic foreign keys

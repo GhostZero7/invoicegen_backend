@@ -1,0 +1,77 @@
+enum UserRole {
+  USER
+  ADMIN
+  ACCOUNTANT
+}
+
+enum UserStatus {
+  ACTIVE
+  SUSPENDED
+  DELETED
+}
+
+type User {
+  id: ID!
+  email: String!
+  firstName: String!
+  lastName: String!
+  phone: String
+  avatarUrl: String
+  emailVerified: Boolean!
+  twoFactorEnabled: Boolean!
+  role: UserRole!
+  status: UserStatus!
+  lastLoginAt: DateTime
+  createdAt: DateTime!
+  updatedAt: DateTime!
+}
+
+input CreateUserInput {
+  email: String!
+  password: String!
+  firstName: String!
+  lastName: String!
+  phone: String
+  role: UserRole
+}
+
+input UpdateUserInput {
+  firstName: String
+  lastName: String
+  phone: String
+  avatarUrl: String
+  role: UserRole
+  status: UserStatus
+}
+
+input UpdatePasswordInput {
+  currentPassword: String!
+  newPassword: String!
+}
+
+type AuthPayload {
+  user: User!
+  accessToken: String!
+  refreshToken: String!
+}
+
+type Query {
+  me: User
+  user(id: ID!): User
+  users(
+    skip: Int = 0
+    limit: Int = 10
+    role: UserRole
+    status: UserStatus
+  ): [User!]!
+}
+
+type Mutation {
+  createUser(input: CreateUserInput!): User!
+  updateUser(id: ID!, input: UpdateUserInput!): User!
+  updatePassword(input: UpdatePasswordInput!): Boolean!
+  deleteUser(id: ID!): Boolean!
+  verifyEmail(token: String!): Boolean!
+  enableTwoFactor: String!
+  disableTwoFactor(code: String!): Boolean!
+}

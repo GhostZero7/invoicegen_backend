@@ -1,0 +1,117 @@
+enum InvoiceStatus {
+  DRAFT
+  SENT
+  VIEWED
+  PAID
+  OVERDUE
+  CANCELLED
+  REFUNDED
+}
+
+enum DiscountType {
+  PERCENTAGE
+  FIXED
+}
+
+type Invoice {
+  id: ID!
+  businessId: ID!
+  clientId: ID!
+  invoiceNumber: String!
+  referenceNumber: String
+  purchaseOrderNumber: String
+  status: InvoiceStatus!
+  invoiceDate: Date!
+  dueDate: Date!
+  paymentTerms: String!
+  subtotal: Float!
+  discountType: DiscountType
+  discountValue: Float!
+  discountAmount: Float!
+  taxAmount: Float!
+  shippingAmount: Float!
+  totalAmount: Float!
+  amountPaid: Float!
+  amountDue: Float!
+  currency: String!
+  notes: String
+  paymentInstructions: String
+  footerText: String
+  isRecurring: Boolean!
+  sentAt: DateTime
+  viewedAt: DateTime
+  paidAt: DateTime
+  cancelledAt: DateTime
+  createdAt: DateTime!
+  updatedAt: DateTime!
+}
+
+type InvoiceItem {
+  id: ID!
+  invoiceId: ID!
+  productId: ID
+  description: String!
+  quantity: Float!
+  unitPrice: Float!
+  unitOfMeasure: String!
+  taxRate: Float!
+  taxAmount: Float!
+  discountType: DiscountType
+  discountValue: Float!
+  discountAmount: Float!
+  lineTotal: Float!
+  sortOrder: Int!
+}
+
+input InvoiceItemInput {
+  productId: ID
+  description: String!
+  quantity: Float!
+  unitPrice: Float!
+  unitOfMeasure: String
+  taxRate: Float
+  discountType: DiscountType
+  discountValue: Float
+}
+
+input CreateInvoiceInput {
+  businessId: ID!
+  clientId: ID!
+  invoiceDate: Date!
+  dueDate: Date!
+  paymentTerms: String!
+  items: [InvoiceItemInput!]!
+  discountType: DiscountType
+  discountValue: Float
+  shippingAmount: Float
+  notes: String
+  paymentInstructions: String
+}
+
+input UpdateInvoiceInput {
+  status: InvoiceStatus
+  dueDate: Date
+  notes: String
+  paymentInstructions: String
+}
+
+extend type Query {
+  invoice(id: ID!): Invoice
+  invoices(
+    businessId: ID
+    clientId: ID
+    status: InvoiceStatus
+    skip: Int = 0
+    limit: Int = 10
+  ): [Invoice!]!
+  invoiceItems(invoiceId: ID!): [InvoiceItem!]!
+}
+
+extend type Mutation {
+  createInvoice(input: CreateInvoiceInput!): Invoice!
+  updateInvoice(id: ID!, input: UpdateInvoiceInput!): Invoice!
+  deleteInvoice(id: ID!): Boolean!
+  sendInvoice(id: ID!): Boolean!
+  markInvoiceAsPaid(id: ID!): Boolean!
+  cancelInvoice(id: ID!): Boolean!
+}

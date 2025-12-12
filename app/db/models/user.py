@@ -36,11 +36,8 @@ class User(Base):
 
     # Relationships
     business_profiles = relationship("BusinessProfile", back_populates="owner", cascade="all, delete-orphan")
-    addresses = relationship("Address", back_populates="user")
     invoices_created = relationship("Invoice", foreign_keys="Invoice.created_by", back_populates="creator")
-    quotes_created = relationship("Quote", foreign_keys="Quote.created_by", back_populates="creator")
     payments_created = relationship("Payment", foreign_keys="Payment.created_by", back_populates="creator")
-    expenses_created = relationship("Expense", foreign_keys="Expense.created_by", back_populates="creator")
-    notifications = relationship("Notification", back_populates="user")
     audit_logs = relationship("AuditLog", back_populates="user")
+    notifications = relationship("Notification", back_populates="user")
     
