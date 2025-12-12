@@ -1,8 +1,8 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from app.db.database import SessionLocal
-from app.invoices.models import Invoice
-from app.invoices.schemas import InvoiceCreate, InvoiceOut
+from app.db.models.invoice import Invoice
+from app.invoices.schemas import InvoiceCreate, InvoiceResponse
 
 router = APIRouter(prefix="/invoices", tags=["Invoices"])
 
@@ -13,7 +13,7 @@ def get_db():
     finally:
         db.close()
 
-@router.post("/", response_model=InvoiceOut)
+@router.post("/", response_model=InvoiceResponse)
 def create_invoice(invoice: InvoiceCreate, db: Session = Depends(get_db)):
     new_invoice = Invoice(
         item=invoice.item,

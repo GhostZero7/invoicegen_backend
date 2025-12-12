@@ -27,6 +27,4 @@ class Product(Base):
 
     # Relationships
     business = relationship("BusinessProfile", back_populates="products")
-    category = relationship("Category", back_populates="products")
     invoice_items = relationship("InvoiceItem", back_populates="product")
-    quote_items = relationship("QuoteItem", back_populates="product")

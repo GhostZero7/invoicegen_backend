@@ -1,0 +1,68 @@
+enum PaymentMethod {
+  CASH
+  CHECK
+  BANK_TRANSFER
+  CREDIT_CARD
+  PAYPAL
+  STRIPE
+  OTHER
+}
+
+enum PaymentStatus {
+  PENDING
+  COMPLETED
+  FAILED
+  REFUNDED
+}
+
+type Payment {
+  id: ID!
+  invoiceId: ID!
+  paymentNumber: String!
+  paymentDate: Date!
+  amount: Float!
+  paymentMethod: PaymentMethod!
+  transactionId: String
+  referenceNumber: String
+  notes: String
+  status: PaymentStatus!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+}
+
+input CreatePaymentInput {
+  invoiceId: ID!
+  paymentDate: Date!
+  amount: Float!
+  paymentMethod: PaymentMethod!
+  transactionId: String
+  referenceNumber: String
+  notes: String
+}
+
+input UpdatePaymentInput {
+  paymentDate: Date
+  amount: Float
+  paymentMethod: PaymentMethod
+  transactionId: String
+  referenceNumber: String
+  notes: String
+  status: PaymentStatus
+}
+
+extend type Query {
+  payment(id: ID!): Payment
+  payments(
+    invoiceId: ID
+    status: PaymentStatus
+    skip: Int = 0
+    limit: Int = 10
+  ): [Payment!]!
+}
+
+extend type Mutation {
+  createPayment(input: CreatePaymentInput!): Payment!
+  updatePayment(id: ID!, input: UpdatePaymentInput!): Payment!
+  deletePayment(id: ID!): Boolean!
+  refundPayment(id: ID!): Boolean!
+}

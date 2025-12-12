@@ -78,11 +78,11 @@ class Invoice(Base):
     business = relationship("BusinessProfile", back_populates="invoices")
     client = relationship("Client", back_populates="invoices")
     category = relationship("Category", back_populates="invoices")
-    creator = relationship("User", foreign_keys=[created_by])
+    creator = relationship("User", foreign_keys=[created_by], back_populates="invoices_created")
     items = relationship("InvoiceItem", back_populates="invoice", cascade="all, delete-orphan")
     payments = relationship("Payment", back_populates="invoice", cascade="all, delete-orphan")
-    reminders = relationship("InvoiceReminder", back_populates="invoice", cascade="all, delete-orphan")
     parent = relationship("Invoice", remote_side=[id], backref="child_invoices")
+    reminders = relationship("InvoiceReminder", back_populates="invoice")
 
 class InvoiceItem(Base):
     __tablename__ = "invoice_items"

@@ -1,0 +1,79 @@
+enum BusinessType {
+  SOLE_PROPRIETOR
+  LLC
+  CORPORATION
+  PARTNERSHIP
+}
+
+enum PaymentTerms {
+  DUE_ON_RECEIPT
+  NET_15
+  NET_30
+  NET_60
+  CUSTOM
+}
+
+type BusinessProfile {
+  id: ID!
+  userId: ID!
+  businessName: String!
+  businessType: BusinessType!
+  taxId: String
+  vatNumber: String
+  registrationNumber: String
+  website: String
+  phone: String
+  email: String!
+  logoUrl: String
+  currency: String!
+  timezone: String!
+  invoicePrefix: String!
+  quotePrefix: String!
+  nextInvoiceNumber: Int!
+  nextQuoteNumber: Int!
+  paymentTermsDefault: PaymentTerms!
+  notesDefault: String
+  paymentInstructions: String
+  isActive: Boolean!
+  createdAt: Date!
+  updatedAt: Date!
+}
+
+input CreateBusinessInput {
+  businessName: String!
+  businessType: BusinessType!
+  taxId: String
+  email: String!
+  phone: String
+  currency: String
+  invoicePrefix: String
+}
+
+input UpdateBusinessInput {
+  businessName: String
+  businessType: BusinessType
+  taxId: String
+  vatNumber: String
+  website: String
+  phone: String
+  email: String
+  logoUrl: String
+  currency: String
+  timezone: String
+  paymentTermsDefault: PaymentTerms
+  notesDefault: String
+  paymentInstructions: String
+  isActive: Boolean
+}
+
+extend type Query {
+  myBusinesses: [BusinessProfile!]!
+  business(id: ID!): BusinessProfile
+  businesses(skip: Int = 0, limit: Int = 10): [BusinessProfile!]!
+}
+
+extend type Mutation {
+  createBusiness(input: CreateBusinessInput!): BusinessProfile!
+  updateBusiness(id: ID!, input: UpdateBusinessInput!): BusinessProfile!
+  deleteBusiness(id: ID!): Boolean!
+}

@@ -53,7 +53,6 @@ class InvoiceItemResponse(InvoiceItemBase):
     updated_at: datetime
     
     class Config:
-        orm_mode = True
         from_attributes = True
 
 # Invoice Schemas
@@ -128,7 +127,6 @@ class InvoiceResponse(InvoiceBase):
     items: List[InvoiceItemResponse] = []
     
     class Config:
-        orm_mode = True
         from_attributes = True
 
 # Invoice List Response

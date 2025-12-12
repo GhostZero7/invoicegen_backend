@@ -32,7 +32,7 @@ def reset_database():
         from app.db.models.business import BusinessProfile
         from app.db.models.address import Address
         from app.db.models.client import Client, ClientContact
-        from app.invoices.models import Invoice, InvoiceItem
+        from app.db.models.invoice import Invoice, InvoiceItem
         from app.db.models.product import Product
         
         Base.metadata.create_all(bind=engine)

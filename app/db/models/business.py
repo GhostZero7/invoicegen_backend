@@ -48,13 +48,11 @@ class BusinessProfile(Base):
 
     # Relationships
     owner = relationship("User", back_populates="business_profiles")
-    addresses = relationship("Address", back_populates="business")
     clients = relationship("Client", back_populates="business")
     invoices = relationship("Invoice", back_populates="business")
-    quotes = relationship("Quote", back_populates="business")
     products = relationship("Product", back_populates="business")
     categories = relationship("Category", back_populates="business")
     expenses = relationship("Expense", back_populates="business")
     tax_rates = relationship("TaxRate", back_populates="business")
-    email_templates = relationship("EmailTemplate", back_populates="business")
+    quotes = relationship("Quote", back_populates="business")
     
