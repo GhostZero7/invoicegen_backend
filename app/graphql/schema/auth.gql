@@ -1,0 +1,12 @@
+
+
+type Auth {
+    token: String
+    user: User
+}
+
+type AuthInput {
+    email: String!
+    password: String!
+    rememberMe: Boolean
+}

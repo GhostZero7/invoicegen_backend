@@ -9,14 +9,14 @@ from app.graphql.mutations.business import BusinessMutation
 from app.graphql.mutations.client import ClientMutation
 from app.graphql.mutations.invoice import InvoiceMutation
 from app.graphql.mutations.payment import PaymentMutation
-
+from app.graphql.mutations.auth import AuthMutation
 @strawberry.type
 class Query(UserQuery, BusinessQuery, ClientQuery, InvoiceQuery, PaymentQuery):
     """Root Query combining all query types"""
     pass
 
 @strawberry.type
-class Mutation(UserMutation, BusinessMutation, ClientMutation, InvoiceMutation, PaymentMutation):
+class Mutation(UserMutation, BusinessMutation, ClientMutation, InvoiceMutation, PaymentMutation, AuthMutation):
     """Root Mutation combining all mutation types"""
     pass
 
