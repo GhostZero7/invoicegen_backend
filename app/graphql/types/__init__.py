@@ -38,6 +38,11 @@ from .payment import (
     UpdatePaymentInput,
 )
 
+from .auth import (
+    Auth,
+    LoginUserInput
+)
+
 __all__ = [
     "User",
     "UserRole",
@@ -68,4 +73,6 @@ __all__ = [
     "PaymentStatus",
     "CreatePaymentInput",
     "UpdatePaymentInput",
+    "Auth",
+    "LoginUserInput"
 ]
