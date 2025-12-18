@@ -20,20 +20,25 @@ class UserLogin(BaseModel):
     email: EmailStr
     password: str
 
-class Token(BaseModel):
-    access_token: str
-    token_type: str = "bearer"
-
 class UserResponse(BaseModel):
     id: str
     email: str
     first_name: str
     last_name: str
-    phone: Optional[str]
-    avatar_url: Optional[str]
+    phone: Optional[str] = None
+    avatar_url: Optional[str] = None
     role: str
     status: str
+    email_verified: bool = False
+    two_factor_enabled: bool = False
+    last_login_at: Optional[datetime] = None
     created_at: datetime
+    updated_at: datetime
     
     class Config:
         from_attributes = True
+
+class Token(BaseModel):
+    access_token: str
+    token_type: str = "bearer"
+    user: Optional[UserResponse] = None

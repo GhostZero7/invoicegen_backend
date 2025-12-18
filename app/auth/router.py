@@ -1,5 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
+from datetime import datetime
 from app.db.database import SessionLocal
 from app.db.models.user import User, UserStatus
 from app.auth.schemas import UserCreate, UserLogin, Token
@@ -66,4 +67,10 @@ def login(user_data: UserLogin, db: Session = Depends(get_db)):
     db.commit()
 
     token = create_access_token({"sub": str(db_user.id), "email": db_user.email})
-    return {"access_token": token, "token_type": "bearer"}
+    
+    # Return token and user data as a dictionary (FastAPI handles Pydantic conversion)
+    return {
+        "access_token": token,
+        "token_type": "bearer",
+        "user": db_user
+    }

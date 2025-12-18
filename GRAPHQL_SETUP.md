@@ -2,7 +2,26 @@
 
 ## Installation Steps
 
-### 1. Install Dependencies
+### 1. Activate Virtual Environment
+
+Before installing dependencies, make sure your virtual environment is active.
+
+**Windows (PowerShell):**
+```powershell
+.\venv\Scripts\Activate.ps1
+```
+
+**Windows (CMD):**
+```cmd
+venv\Scripts\activate.bat
+```
+
+**Linux/macOS:**
+```bash
+source venv/bin/activate
+```
+
+### 2. Install Dependencies
 
 The GraphQL implementation requires these additional packages:
 - `strawberry-graphql[fastapi]` - GraphQL library for Python
@@ -23,7 +42,7 @@ uv pip install strawberry-graphql[fastapi]==0.245.2 pyotp==2.9.0
 pip install -r requirements.txt
 ```
 
-### 2. Fix python-jose Compatibility (Python 3.14)
+### 3. Fix python-jose Compatibility (Python 3.14)
 
 The requirements.txt has been updated to use `python-jose[cryptography]==3.3.0` which is compatible with Python 3.14. If you had the old version installed:
 
@@ -32,7 +51,7 @@ uv pip uninstall python-jose
 uv pip install python-jose[cryptography]==3.3.0
 ```
 
-### 3. Run the Server
+### 4. Run the Server
 
 ```bash
 fastapi run app.main:app
@@ -43,7 +62,7 @@ Or with uvicorn for development:
 uvicorn app.main:app --reload
 ```
 
-### 4. Access GraphQL Playground
+### 5. Access GraphQL Playground
 
 Open your browser and navigate to:
 ```

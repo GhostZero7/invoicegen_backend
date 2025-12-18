@@ -290,14 +290,47 @@ htmlcov/
 .tox/
 test-results/
 
-# IDE and editor files
+# OS files
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# Project Specific
+*.db
+*.sqlite
+*.sqlite3
+invoicegen.db
+instance/
+.env
+.env.*
+secrets.json
+secrets.yml
+*.pem
+*.key
+*.cert
+
+# Environments
+venv/
+.venv/
+env/
+ENV/
+
+# Python specific
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+.pytest_cache/
+.coverage
+htmlcov/
+.tox/
+.mypy_cache/
+
+# IDE files
 .vscode/
 .idea/
 *.swp
 *.swo
 *~
 *.code-workspace
-
-# OS files
-.DS_Store
-Thumbs.db
