@@ -42,3 +42,10 @@ class Token(BaseModel):
     access_token: str
     token_type: str = "bearer"
     user: Optional[UserResponse] = None
+
+class EmailVerificationRequest(BaseModel):
+    email: EmailStr
+
+class VerifyOtpRequest(BaseModel):
+    email: EmailStr
+    otp: str = Field(..., min_length=6, max_length=6)
