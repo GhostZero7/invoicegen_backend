@@ -37,10 +37,31 @@ from .payment import (
     CreatePaymentInput,
     UpdatePaymentInput,
 )
-
+from .product import (
+    Product,
+    CreateProductInput,
+    UpdateProductInput,
+    ProductFilterInput,
+)
+from .category import (
+    Category,
+    CategoryType,
+    CreateCategoryInput,
+    UpdateCategoryInput,
+    CategoryFilterInput,
+)
+from .waitlist import (
+    Waitlist,
+    WaitlistPriority,
+    CreateWaitlistInput,
+    UpdateWaitlistInput,
+    WaitlistFilterInput,
+    WaitlistStats,
+)
 from .auth import (
     Auth,
-    LoginUserInput
+    LoginUserInput,
+    VerificationEmail
 )
 
 __all__ = [
@@ -73,6 +94,22 @@ __all__ = [
     "PaymentStatus",
     "CreatePaymentInput",
     "UpdatePaymentInput",
+    "Product",
+    "CreateProductInput",
+    "UpdateProductInput",
+    "ProductFilterInput",
+    "Category",
+    "CategoryType",
+    "CreateCategoryInput",
+    "UpdateCategoryInput",
+    "CategoryFilterInput",
+    "Waitlist",
+    "WaitlistPriority",
+    "CreateWaitlistInput",
+    "UpdateWaitlistInput",
+    "WaitlistFilterInput",
+    "WaitlistStats",
     "Auth",
-    "LoginUserInput"
+    "LoginUserInput",
+    "VerificationEmail"
 ]

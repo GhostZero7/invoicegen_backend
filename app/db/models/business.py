@@ -43,6 +43,7 @@ class BusinessProfile(Base):
     notes_default = Column(Text, nullable=True)
     payment_instructions = Column(Text, nullable=True)
     is_active = Column(Boolean, default=True)
+    is_premium = Column(Boolean, default=False)
     created_at = Column(Date, default=datetime.utcnow, nullable=False)
     updated_at = Column(Date, default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False)
 

@@ -2,6 +2,8 @@ import strawberry
 from datetime import date, datetime
 from typing import Optional, List
 from enum import Enum
+from app.graphql.types.client import Client
+
 
 @strawberry.enum
 class InvoiceStatus(Enum):
@@ -23,6 +25,7 @@ class Invoice:
     id: strawberry.ID
     business_id: strawberry.ID
     client_id: strawberry.ID
+    client: Optional[Client]
     invoice_number: str
     reference_number: Optional[str]
     purchase_order_number: Optional[str]
@@ -83,8 +86,8 @@ class InvoiceItemInput:
 class CreateInvoiceInput:
     business_id: strawberry.ID
     client_id: strawberry.ID
-    invoice_date: date
-    due_date: date
+    invoice_date: datetime
+    due_date: datetime
     payment_terms: str
     items: List[InvoiceItemInput]
     discount_type: Optional[DiscountType] = None
@@ -96,6 +99,6 @@ class CreateInvoiceInput:
 @strawberry.input
 class UpdateInvoiceInput:
     status: Optional[InvoiceStatus] = None
-    due_date: Optional[date] = None
+    due_date: Optional[datetime] = None
     notes: Optional[str] = None
     payment_instructions: Optional[str] = None

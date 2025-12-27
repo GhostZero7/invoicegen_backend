@@ -4,6 +4,7 @@ from datetime import datetime
 import uuid
 from app.graphql.types.business import BusinessProfile, CreateBusinessInput, UpdateBusinessInput
 from app.db.models.business import BusinessProfile as BusinessModel
+from app.services.billing_service import BillingService
 
 @strawberry.type
 class BusinessMutation:
@@ -15,6 +16,10 @@ class BusinessMutation:
         
         if not user:
             raise Exception("Not authenticated")
+            
+        # Check billing limits
+        if not BillingService.can_create_business(db, user.id):
+            raise Exception("Maximum business profiles reached for your plan. Please upgrade to create more.")
         
         business = BusinessModel(
             id=str(uuid.uuid4()),

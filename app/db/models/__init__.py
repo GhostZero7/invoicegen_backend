@@ -17,6 +17,8 @@ from app.db.models.invoice_reminder import InvoiceReminder
 from app.db.models.notification import Notification
 from app.db.models.qoute import Quote, QuoteItem
 from app.db.models.tax_rate import TaxRate
+from app.db.models.waitlist import Waitlist
+from app.db.models.billing import BillingPlan, Subscription
 
 __all__ = [
     "User",
@@ -36,4 +38,5 @@ __all__ = [
     "Quote",
     "QuoteItem",
     "TaxRate",
+    "Waitlist",
 ]

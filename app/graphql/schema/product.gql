@@ -1,0 +1,153 @@
+# Product GraphQL Schema
+
+type Product {
+  id: ID!
+  businessId: ID!
+  sku: String
+  name: String!
+  description: String
+  unitPrice: Float!
+  costPrice: Float
+  unitOfMeasure: String!
+  taxRate: Float!
+  isTaxable: Boolean!
+  trackInventory: Boolean!
+  quantityInStock: Int!
+  lowStockThreshold: Int
+  imageUrl: String
+  isActive: Boolean!
+  createdAt: Date!
+  updatedAt: Date!
+}
+
+input CreateProductInput {
+  businessId: ID!
+  sku: String
+  name: String!
+  description: String
+  unitPrice: Float!
+  costPrice: Float
+  unitOfMeasure: String = "unit"
+  taxRate: Float = 0.0
+  isTaxable: Boolean = true
+  trackInventory: Boolean = false
+  quantityInStock: Int = 0
+  lowStockThreshold: Int
+  imageUrl: String
+}
+
+input UpdateProductInput {
+  sku: String
+  name: String
+  description: String
+  unitPrice: Float
+  costPrice: Float
+  unitOfMeasure: String
+  taxRate: Float
+  isTaxable: Boolean
+  trackInventory: Boolean
+  quantityInStock: Int
+  lowStockThreshold: Int
+  imageUrl: String
+  isActive: Boolean
+}
+
+input ProductFilterInput {
+  businessId: ID
+  name: String
+  sku: String
+  isActive: Boolean
+  trackInventory: Boolean
+  lowStockOnly: Boolean
+}
+
+# Queries
+extend type Query {
+  # Get a single product by ID
+  product(id: ID!): Product
+  
+  # Get products with optional filtering and pagination
+  products(
+    filter: ProductFilterInput
+    skip: Int = 0
+    limit: Int = 10
+  ): [Product!]!
+  
+  # Get products for a specific business
+  productsByBusiness(
+    businessId: ID!
+    skip: Int = 0
+    limit: Int = 10
+    activeOnly: Boolean = true
+  ): [Product!]!
+  
+  # Get products that are low in stock
+  lowStockProducts(businessId: ID): [Product!]!
+}
+
+# Mutations
+extend type Mutation {
+  # Create a new product
+  createProduct(input: CreateProductInput!): Product!
+  
+  # Update an existing product
+  updateProduct(id: ID!, input: UpdateProductInput!): Product!
+  
+  # Delete a product (soft delete)
+  deleteProduct(id: ID!): Boolean!
+  
+  # Update product stock quantity
+  updateProductStock(
+    id: ID!
+    quantity: Int!
+    operation: String = "set"  # "set", "add", "subtract"
+  ): Product!
+  
+  # Duplicate an existing product
+  duplicateProduct(id: ID!): Product!
+}
+
+# Example Queries:
+
+# Get all products for a business
+# query GetProducts($businessId: ID!) {
+#   productsByBusiness(businessId: $businessId) {
+#     id
+#     name
+#     sku
+#     unitPrice
+#     quantityInStock
+#     isActive
+#   }
+# }
+
+# Create a new product
+# mutation CreateProduct($input: CreateProductInput!) {
+#   createProduct(input: $input) {
+#     id
+#     name
+#     sku
+#     unitPrice
+#     isActive
+#   }
+# }
+
+# Update product stock
+# mutation UpdateStock($id: ID!, $quantity: Int!) {
+#   updateProductStock(id: $id, quantity: $quantity, operation: "add") {
+#     id
+#     name
+#     quantityInStock
+#   }
+# }
+
+# Get low stock products
+# query LowStockProducts($businessId: ID!) {
+#   lowStockProducts(businessId: $businessId) {
+#     id
+#     name
+#     sku
+#     quantityInStock
+#     lowStockThreshold
+#   }
+# }
