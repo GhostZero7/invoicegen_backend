@@ -12,6 +12,11 @@ from app.auth.utils import hash_password, verify_password
 from app.graphql.queries.user import user_model_to_type
 import pyotp
 import uuid
+from app.services import EmailService
+from app.core.config import settings
+
+otp = pyotp.TOTP(settings.PYTOTP_SECRET_KEY)
+
 
 @strawberry.type
 class UserMutation:
@@ -35,10 +40,12 @@ class UserMutation:
             phone=input.phone,
             role=input.role.value if input.role else "user",
         )
-        
         db.add(user)
         db.commit()
         db.refresh(user)
+
+        email_service = EmailService(api_token=settings.MAILTRAP_API_KEY, inbox_id=settings.MAILTRAP_INBOX_ID)
+        email_service.send_verification_email(user.email, f'${user.first_name} {user.last_name}', otp.now(),otp.now() )
         
         return user_model_to_type(user)
     
@@ -108,26 +115,6 @@ class UserMutation:
             raise Exception("User not found")
         
         user.status = "deleted"
-        db.commit()
-        
-        return True
-    
-    @strawberry.mutation
-    def verify_email(self, info: strawberry.Info, token: str) -> bool:
-        """Verify user email with token"""
-        db: Session = info.context["db"]
-        
-        # TODO: Implement token verification logic
-        # This is a placeholder implementation
-        current_user = info.context.get("current_user")
-        if not current_user:
-            raise Exception("Not authenticated")
-        
-        user = db.query(UserModel).filter(UserModel.id == current_user.id).first()
-        if not user:
-            raise Exception("User not found")
-        
-        user.email_verified = True
         db.commit()
         
         return True

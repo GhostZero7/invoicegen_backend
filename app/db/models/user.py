@@ -15,6 +15,19 @@ class UserStatus(str, enum.Enum):
     SUSPENDED = "suspended"
     DELETED = "deleted"
 
+class SubscriptionPlan(str, enum.Enum):
+    FREE = "free"
+    STARTER = "starter"
+    PRO = "pro"
+    ENTERPRISE = "enterprise"
+
+class SubscriptionStatus(str, enum.Enum):
+    ACTIVE = "active"
+    PAST_DUE = "past_due"
+    CANCELED = "canceled"
+    INCOMPLETE = "incomplete"
+    TRIALING = "trialing"
+
 class User(Base):
     __tablename__ = "users"
 
@@ -30,11 +43,19 @@ class User(Base):
     two_factor_secret = Column(String(255), nullable=True)
     role = Column(Enum(UserRole), default=UserRole.USER)
     status = Column(Enum(UserStatus), default=UserStatus.ACTIVE)
+    
+    # Subscription fields
+    subscription_plan = Column(Enum(SubscriptionPlan), default=SubscriptionPlan.FREE)
+    subscription_status = Column(Enum(SubscriptionStatus), default=SubscriptionStatus.ACTIVE)
+    stripe_customer_id = Column(String(255), nullable=True, index=True)
+    stripe_subscription_id = Column(String(255), nullable=True, index=True)
+    
     last_login_at = Column(DateTime, nullable=True)
     created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False)
 
     # Relationships
+    subscription = relationship("Subscription", back_populates="user", uselist=False, cascade="all, delete-orphan")
     business_profiles = relationship("BusinessProfile", back_populates="owner", cascade="all, delete-orphan")
     invoices_created = relationship("Invoice", foreign_keys="Invoice.created_by", back_populates="creator")
     payments_created = relationship("Payment", foreign_keys="Payment.created_by", back_populates="creator")

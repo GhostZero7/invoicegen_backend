@@ -1,10 +1,12 @@
-from fastapi import Depends, HTTPException, status
+from fastapi import Depends, HTTPException, status, Request
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from sqlalchemy.orm import Session
 from jose import jwt, JWTError
 from app.core.config import settings
 from app.db.database import SessionLocal
 from app.db.models.user import User
+from redis import asyncio as aioredis
+
 
 security = HTTPBearer()
 security_optional = HTTPBearer(auto_error=False)
@@ -70,3 +72,11 @@ def get_current_user_optional(
     if user is None or user.status != "active":
         return None
     return user
+
+def get_redis_client(request: Request) -> aioredis.Redis:
+    """Provides the Redis client instance stored in the app state."""
+    # We access the redis client attached to the application state
+    redis = request.app.state.redis
+    if redis is None:
+        raise HTTPException(status_code=500, detail="Redis service unavailable")
+    return redis

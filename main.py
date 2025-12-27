@@ -11,6 +11,7 @@ from app.db.models import *
 
 # Configure SQLAlchemy registry to resolve relationships
 from sqlalchemy.orm import configure_mappers
+from app.core import lifespan
 configure_mappers()
 
 # Create tables
@@ -21,15 +22,16 @@ app = FastAPI(
     description="Complete invoicing and financial management system",
     version="1.0.0",
     docs_url="/docs",
-    redoc_url="/redoc"
+    redoc_url="/redoc",
+    lifespan=lifespan
 )
 
 # CORS middleware
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
-        "http://localhost:3000",  # Next.js development server
-        "http://127.0.0.1:3000",  # Alternative localhost
+        "http://localhost:3030",  # Next.js development server
+        "http://127.0.0.1:3030",  # Alternative localhost
         "https://your-frontend-domain.com"  # Add your production domain here
     ],
     allow_credentials=True,

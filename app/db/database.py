@@ -10,7 +10,7 @@ connect_args = {}
 if "neon.tech" in settings.DATABASE_URL or "postgresql" in settings.DATABASE_URL:
     # For PostgreSQL/Neon, use sslmode in the URL or configure SSL properly
     connect_args = {
-        "sslmode": "require",
+        # "sslmode": "require",
     }
 
 engine = create_engine(

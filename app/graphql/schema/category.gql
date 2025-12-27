@@ -1,0 +1,138 @@
+# Category GraphQL Schema
+
+enum CategoryType {
+  INVOICE
+  PRODUCT
+  EXPENSE
+}
+
+type Category {
+  id: ID!
+  businessId: ID!
+  name: String!
+  description: String
+  color: String
+  icon: String
+  parentId: ID
+  categoryType: CategoryType!
+  isActive: Boolean!
+  sortOrder: Int!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  
+  # Relationships
+  subcategories: [Category!]
+  parent: Category
+}
+
+input CreateCategoryInput {
+  businessId: ID!
+  name: String!
+  description: String
+  color: String
+  icon: String
+  parentId: ID
+  categoryType: CategoryType!
+  sortOrder: Int = 0
+}
+
+input UpdateCategoryInput {
+  name: String
+  description: String
+  color: String
+  icon: String
+  parentId: ID
+  isActive: Boolean
+  sortOrder: Int
+}
+
+input CategoryFilterInput {
+  businessId: ID
+  categoryType: CategoryType
+  parentId: ID
+  isActive: Boolean
+  name: String
+}
+
+# Queries
+extend type Query {
+  # Get a single category by ID
+  category(id: ID!): Category
+  
+  # Get categories with optional filtering and pagination
+  categories(
+    filter: CategoryFilterInput
+    skip: Int = 0
+    limit: Int = 50
+  ): [Category!]!
+  
+  # Get categories for a specific business
+  categoriesByBusiness(
+    businessId: ID!
+    categoryType: CategoryType
+    activeOnly: Boolean = true
+    rootOnly: Boolean = false
+  ): [Category!]!
+  
+  # Get hierarchical category tree
+  categoryTree(
+    businessId: ID!
+    categoryType: CategoryType
+  ): [Category!]!
+}
+
+# Mutations
+extend type Mutation {
+  # Create a new category
+  createCategory(input: CreateCategoryInput!): Category!
+  
+  # Update an existing category
+  updateCategory(id: ID!, input: UpdateCategoryInput!): Category!
+  
+  # Delete a category (soft delete if in use)
+  deleteCategory(id: ID!): Boolean!
+  
+  # Reorder categories
+  reorderCategories(categoryIds: [ID!]!): [Category!]!
+}
+
+# Example Queries:
+
+# Get category tree for products
+# query GetProductCategories($businessId: ID!) {
+#   categoryTree(businessId: $businessId, categoryType: PRODUCT) {
+#     id
+#     name
+#     color
+#     icon
+#     subcategories {
+#       id
+#       name
+#       color
+#       icon
+#     }
+#   }
+# }
+
+# Create a new category
+# mutation CreateCategory($input: CreateCategoryInput!) {
+#   createCategory(input: $input) {
+#     id
+#     name
+#     categoryType
+#     sortOrder
+#   }
+# }
+
+# Get all categories for a business
+# query GetCategories($businessId: ID!, $type: CategoryType!) {
+#   categoriesByBusiness(businessId: $businessId, categoryType: $type) {
+#     id
+#     name
+#     description
+#     color
+#     icon
+#     parentId
+#     sortOrder
+#   }
+# }
