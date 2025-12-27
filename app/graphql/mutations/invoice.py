@@ -5,6 +5,7 @@ import uuid
 from app.graphql.types.invoice import Invoice, CreateInvoiceInput, UpdateInvoiceInput
 from app.db.models.invoice import Invoice as InvoiceModel, InvoiceItem as InvoiceItemModel
 from app.db.models.business import BusinessProfile
+from app.services.billing_service import BillingService
 
 @strawberry.type
 class InvoiceMutation:
@@ -16,6 +17,10 @@ class InvoiceMutation:
         
         if not user:
             raise Exception("Not authenticated")
+            
+        # Check billing limits
+        if not BillingService.can_create_invoice(db, str(input.business_id)):
+            raise Exception("Monthly invoice limit reached for your plan. Please upgrade to create more invoices.")
         
         # Verify user owns the business
         business = db.query(BusinessProfile).filter(
@@ -65,8 +70,8 @@ class InvoiceMutation:
             client_id=str(input.client_id),
             invoice_number=invoice_number,
             status="draft",
-            invoice_date=input.invoice_date,
-            due_date=input.due_date,
+            invoice_date=input.invoice_date.date(),
+            due_date=input.due_date.date(),
             payment_terms=input.payment_terms,
             subtotal=subtotal,
             discount_type=input.discount_type.value if input.discount_type else None,
@@ -130,6 +135,28 @@ class InvoiceMutation:
             id=strawberry.ID(str(invoice.id)),
             business_id=strawberry.ID(str(invoice.business_id)),
             client_id=strawberry.ID(str(invoice.client_id)),
+            client=Client(
+                id=strawberry.ID(str(client.id)),
+                business_id=strawberry.ID(str(client.business_id)),
+                first_name=client.first_name,
+                last_name=client.last_name,
+                status=client.status,
+                phone=client.phone,
+                email=client.email,
+                notes=client.notes,
+                company_name=client.company_name,
+                created_at=client.created_at,
+                updated_at=client.updated_at,
+                client_type=client.client_type,
+                mobile=client.mobile,
+                website=client.website,
+                tax_id=client.tax_id,
+                vat_number=client.vat_number,
+                payment_terms=client.payment_terms,
+                credit_limit=client.credit_limit,
+                currency=client.currency,
+                language=client.language 
+            ),
             invoice_number=invoice.invoice_number,
             reference_number=invoice.reference_number,
             purchase_order_number=invoice.purchase_order_number,
@@ -184,7 +211,7 @@ class InvoiceMutation:
         if input.status is not None:
             invoice.status = input.status.value
         if input.due_date is not None:
-            invoice.due_date = input.due_date
+            invoice.due_date = input.due_date.date()
         if input.notes is not None:
             invoice.notes = input.notes
         if input.payment_instructions is not None:

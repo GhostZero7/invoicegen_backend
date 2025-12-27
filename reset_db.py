@@ -34,6 +34,7 @@ def reset_database():
         from app.db.models.client import Client, ClientContact
         from app.db.models.invoice import Invoice, InvoiceItem
         from app.db.models.product import Product
+        from app.db.models.billing import BillingPlan, Subscription
         
         Base.metadata.create_all(bind=engine)
         print("Tables created successfully!")

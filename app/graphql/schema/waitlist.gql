@@ -1,0 +1,181 @@
+# Waitlist GraphQL Schema
+
+enum WaitlistPriority {
+  NORMAL
+  HIGH
+  VIP
+}
+
+type Waitlist {
+  id: ID!
+  email: String!
+  firstName: String
+  lastName: String
+  companyName: String
+  phone: String
+  message: String
+  source: String
+  utmSource: String
+  utmMedium: String
+  utmCampaign: String
+  isNotified: Boolean!
+  isConverted: Boolean!
+  userId: ID
+  priority: WaitlistPriority!
+  tags: String
+  notes: String
+  ipAddress: String
+  userAgent: String
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  notifiedAt: DateTime
+  convertedAt: DateTime
+}
+
+type WaitlistStats {
+  totalCount: Int!
+  notifiedCount: Int!
+  convertedCount: Int!
+  conversionRate: Float!
+  recentSignups: Int!
+}
+
+input CreateWaitlistInput {
+  email: String!
+  firstName: String
+  lastName: String
+  companyName: String
+  phone: String
+  message: String
+  source: String
+  utmSource: String
+  utmMedium: String
+  utmCampaign: String
+  priority: WaitlistPriority = NORMAL
+  tags: String
+}
+
+input UpdateWaitlistInput {
+  firstName: String
+  lastName: String
+  companyName: String
+  phone: String
+  message: String
+  source: String
+  priority: WaitlistPriority
+  tags: String
+  notes: String
+  isNotified: Boolean
+  isConverted: Boolean
+  userId: ID
+}
+
+input WaitlistFilterInput {
+  email: String
+  companyName: String
+  source: String
+  priority: WaitlistPriority
+  isNotified: Boolean
+  isConverted: Boolean
+  tags: String
+  createdAfter: DateTime
+  createdBefore: DateTime
+}
+
+# Queries
+extend type Query {
+  # Get waitlist entry by ID (Admin only)
+  waitlistEntry(id: ID!): Waitlist
+  
+  # Get waitlist entries with filtering (Admin only)
+  waitlistEntries(
+    filter: WaitlistFilterInput
+    skip: Int = 0
+    limit: Int = 50
+    orderBy: String = "created_at"
+    orderDesc: Boolean = true
+  ): [Waitlist!]!
+  
+  # Check if email is in waitlist (Public)
+  waitlistByEmail(email: String!): Waitlist
+  
+  # Get waitlist statistics (Admin only)
+  waitlistStats: WaitlistStats!
+  
+  # Get position in waitlist (Public)
+  waitlistPosition(email: String!): Int
+}
+
+# Mutations
+extend type Mutation {
+  # Join the waitlist (Public)
+  joinWaitlist(input: CreateWaitlistInput!): Waitlist!
+  
+  # Update waitlist entry (Admin only)
+  updateWaitlistEntry(id: ID!, input: UpdateWaitlistInput!): Waitlist!
+  
+  # Delete waitlist entry (Admin only)
+  deleteWaitlistEntry(id: ID!): Boolean!
+  
+  # Mark entries as notified (Admin only)
+  markWaitlistNotified(ids: [ID!]!): [Waitlist!]!
+  
+  # Mark entry as converted (Admin only)
+  markWaitlistConverted(id: ID!, userId: ID): Waitlist!
+  
+  # Bulk update priority (Admin only)
+  bulkUpdateWaitlistPriority(ids: [ID!]!, priority: String!): [Waitlist!]!
+}
+
+# Example Queries:
+
+# Join waitlist (Public)
+# mutation JoinWaitlist($input: CreateWaitlistInput!) {
+#   joinWaitlist(input: $input) {
+#     id
+#     email
+#     firstName
+#     lastName
+#     companyName
+#     priority
+#     createdAt
+#   }
+# }
+
+# Check waitlist position (Public)
+# query CheckPosition($email: String!) {
+#   waitlistPosition(email: $email)
+#   waitlistByEmail(email: $email) {
+#     id
+#     firstName
+#     lastName
+#     isNotified
+#     createdAt
+#   }
+# }
+
+# Get waitlist stats (Admin)
+# query WaitlistStats {
+#   waitlistStats {
+#     totalCount
+#     notifiedCount
+#     convertedCount
+#     conversionRate
+#     recentSignups
+#   }
+# }
+
+# Get waitlist entries (Admin)
+# query GetWaitlistEntries($filter: WaitlistFilterInput) {
+#   waitlistEntries(filter: $filter, limit: 20) {
+#     id
+#     email
+#     firstName
+#     lastName
+#     companyName
+#     priority
+#     isNotified
+#     isConverted
+#     createdAt
+#   }
+# }

@@ -17,6 +17,7 @@ from app.db.models.notification import Notification
 from app.db.models.audit_log import AuditLog
 from app.db.models.invoice import Invoice, InvoiceItem
 from app.db.models.verification_code import VerificationCode
+from app.db.models.billing import BillingPlan, Subscription
 
 print("Creating tables...")
 Base.metadata.create_all(bind=engine)

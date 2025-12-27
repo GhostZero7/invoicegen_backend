@@ -17,7 +17,7 @@ import uuid
 
 from sqlalchemy.orm import Session
 from app.db.database import SessionLocal
-from app.db.models.user import User, UserRole, UserStatus
+from app.db.models.user import User, UserRole, UserStatus, SubscriptionPlan, SubscriptionStatus
 from app.db.models.business import BusinessProfile, BusinessType, PaymentTerms
 from app.db.models.client import Client, ClientType, ClientStatus, ClientContact
 from app.db.models.invoice import Invoice, InvoiceStatus, InvoiceItem, DiscountType
@@ -25,6 +25,7 @@ from app.db.models.product import Product
 from app.db.models.payment import Payment, PaymentMethod, PaymentStatus
 from app.db.models.address import Address, AddressType
 from app.db.models.categories import Category
+from app.db.models.billing import BillingPlan, Subscription
 from app.auth.utils import hash_password
 
 # Sample data
@@ -159,7 +160,7 @@ def create_business_profiles(db: Session, users: list[User]) -> list[BusinessPro
     """Create business profiles for each user"""
     businesses = []
     
-    for user in users:
+    for i, user in enumerate(users):
         business = BusinessProfile(
             id=str(uuid.uuid4()),
             user_id=user.id,
@@ -169,8 +170,8 @@ def create_business_profiles(db: Session, users: list[User]) -> list[BusinessPro
             email=user.email,
             phone=user.phone,
             currency="USD",
-            invoice_prefix="INV",
-            quote_prefix="QUO",
+            invoice_prefix=f"INV-{i:02d}",
+            quote_prefix=f"QUO-{i:02d}",
             next_invoice_number=random.randint(1000, 2000),
             next_quote_number=random.randint(100, 500),
             payment_terms_default=random.choice(list(PaymentTerms)),
@@ -512,6 +513,94 @@ def create_payments(db: Session, invoices: list[Invoice], users: list[User]):
     return payments
 
 
+def create_billing_plans(db: Session) -> list[BillingPlan]:
+    """Create default billing plans"""
+    plans = []
+    
+    plan_data = [
+        {
+            "name": "Free Plan",
+            "plan_type": SubscriptionPlan.FREE,
+            "description": "Perfect for freelancers just starting out",
+            "price_monthly": 0.0,
+            "price_yearly": 0.0,
+            "max_invoices_per_month": 5,
+            "max_businesses": 1,
+            "features": ["basic_pdf"]
+        },
+        {
+            "name": "Starter Plan",
+            "plan_type": SubscriptionPlan.STARTER,
+            "description": "For growing small businesses",
+            "price_monthly": 15.0,
+            "price_yearly": 150.0,
+            "max_invoices_per_month": 50,
+            "max_businesses": 2,
+            "features": ["custom_branding", "reminders"]
+        },
+        {
+            "name": "Pro Plan",
+            "plan_type": SubscriptionPlan.PRO,
+            "description": "Full featured for professional agencies",
+            "price_monthly": 39.0,
+            "price_yearly": 390.0,
+            "max_invoices_per_month": None, # Unlimited
+            "max_businesses": 5,
+            "features": ["custom_branding", "reminders", "recurring_invoices", "advanced_reporting"]
+        },
+        {
+            "name": "Enterprise Plan",
+            "plan_type": SubscriptionPlan.ENTERPRISE,
+            "description": "Unlimited everything for large companies",
+            "price_monthly": 99.0,
+            "price_yearly": 990.0,
+            "max_invoices_per_month": None, # Unlimited
+            "max_businesses": None,         # Unlimited
+            "features": ["custom_branding", "reminders", "recurring_invoices", "advanced_reporting", "audit_logs", "priority_support"]
+        }
+    ]
+    
+    for data in plan_data:
+        plan = BillingPlan(
+            id=str(uuid.uuid4()),
+            **data
+        )
+        plans.append(plan)
+        db.add(plan)
+    
+    db.commit()
+    print(f"✓ Created {len(plans)} billing plans")
+    return plans
+
+
+def create_subscriptions(db: Session, users: list[User], plans: list[BillingPlan]) -> list[Subscription]:
+    """Create subscriptions for users"""
+    subscriptions = []
+    
+    # Assign random plans to users
+    for user in users:
+        # Prefer FREE for most, but give some PRO/STARTER
+        plan = random.choices(
+            plans,
+            weights=[60, 20, 15, 5]
+        )[0]
+        
+        subscription = Subscription(
+            id=str(uuid.uuid4()),
+            user_id=user.id,
+            plan_id=plan.id,
+            status=SubscriptionStatus.ACTIVE,
+            current_period_start=datetime.utcnow() - timedelta(days=random.randint(0, 30)),
+            current_period_end=datetime.utcnow() + timedelta(days=random.randint(1, 30))
+        )
+        subscriptions.append(subscription)
+        db.add(subscription)
+    
+    db.commit()
+    print(f"✓ Created {len(subscriptions)} subscriptions")
+    return subscriptions
+
+
 def seed_database():
     """Main seeding function"""
     print("\n🌱 Starting database seeding...\n")
@@ -527,6 +616,10 @@ def seed_database():
         clients = create_clients(db, businesses)
         invoices = create_invoices(db, businesses, clients, products, users, categories)
         payments = create_payments(db, invoices, users)
+        
+        # New billing seeding
+        plans = create_billing_plans(db)
+        subscriptions = create_subscriptions(db, users, plans)
         
         print("\n✅ Database seeding completed successfully!")
         print(f"\nSummary:")
