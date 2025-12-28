@@ -339,7 +339,7 @@ def setup_email_environment():
             f.write("# Email Service Configuration\n")
             f.write('\n'.join(config_lines))
     
-    print(f"\n✅ Email configuration saved to {env_file}")
+    print(f"\n Email configuration saved to {env_file}")
     print("\nNext steps:")
     print("1. Test your configuration by running the email examples")
     print("2. Update sender email addresses to match your domain")

@@ -49,11 +49,11 @@ class BusinessProfile(Base):
 
     # Relationships
     owner = relationship("User", back_populates="business_profiles")
-    clients = relationship("Client", back_populates="business")
-    invoices = relationship("Invoice", back_populates="business")
-    products = relationship("Product", back_populates="business")
-    categories = relationship("Category", back_populates="business")
-    expenses = relationship("Expense", back_populates="business")
-    tax_rates = relationship("TaxRate", back_populates="business")
-    quotes = relationship("Quote", back_populates="business")
+    clients = relationship("Client", back_populates="business", cascade="all, delete-orphan")
+    invoices = relationship("Invoice", back_populates="business", cascade="all, delete-orphan")
+    products = relationship("Product", back_populates="business", cascade="all, delete-orphan")
+    categories = relationship("Category", back_populates="business", cascade="all, delete-orphan")
+    expenses = relationship("Expense", back_populates="business", cascade="all, delete-orphan")
+    tax_rates = relationship("TaxRate", back_populates="business", cascade="all, delete-orphan")
+    quotes = relationship("Quote", back_populates="business", cascade="all, delete-orphan")
     

@@ -46,6 +46,29 @@ graphql_app = GraphQLRouter(
     graphiql=True,  # Enable GraphiQL web interface
 )
 
+from fastapi import Request
+import json
+
+@app.middleware("http")
+async def log_requests(request: Request, call_next):
+    print(f" Incoming request: {request.method} {request.url}")
+    
+    # Try to read body for /auth/login
+    if "login" in str(request.url):
+        try:
+            body = await request.body()
+            print(f" Request Body: {body.decode()}")
+            # Re-seed request body because it's a stream
+            async def receive():
+                return {"type": "http.request", "body": body, "more_body": False}
+            request._receive = receive
+        except Exception as e:
+            print(f" Could not read body: {e}")
+            
+    response = await call_next(request)
+    print(f" Response Status: {response.status_code}")
+    return response
+
 # Include routers
 app.include_router(graphql_app, prefix="/graphql")
 app.include_router(api_router)

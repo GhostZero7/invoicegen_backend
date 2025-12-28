@@ -15,8 +15,8 @@ async def get_context(
     """Create GraphQL context with database session and current user"""
     # Debug logging
     auth_header = request.headers.get("authorization")
-    print(f"🔍 Auth header: {auth_header[:50] if auth_header else 'None'}...")
-    print(f"🔍 Current user: {current_user.email if current_user else 'None'}")
+    print(f" Auth header: {auth_header[:50] if auth_header else 'None'}...")
+    print(f" Current user: {current_user.email if current_user else 'None'}")
     
     return {
         "request": request,

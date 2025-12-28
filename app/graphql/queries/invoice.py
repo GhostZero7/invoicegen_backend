@@ -165,32 +165,10 @@ class InvoiceQuery:
         """Get invoices with optional filters"""
         db: Session = info.context["db"]
         user = info.context.get("current_user")
-        redis_client: aioredis.Redis = info.context["redis"]
 
         if not user:
             raise Exception("Not authenticated")
 
-
-        
-        cache_key_params = f"{business_id=}:{client_id=}:{status=}:{skip=}:{limit=}"
-        cache_key = f"user:{user.id}:invoices:{cache_key_params}"
-
-        cached_data = await redis_client.getex(cache_key)
-        if cached_data:
-            print("💾 Returning invoices from cache")
-            # 1. Deserialize the JSON string back into a list of dictionaries
-            data_list_raw = json.loads(cached_data)
-            # 2. Parse the string dates back into date objects
-            data_list_parsed = parse_iso_dates(data_list_raw)            
-            # 3. Convert dictionaries back into the Strawberry Type instances
-            invoices = []
-            for data in data_list_parsed:
-                if data.get("client") and isinstance(data["client"], dict):
-                    data["client"] = Client(**data["client"])
-                invoices.append(Invoice(**data))
-            return invoices
-
-        
         query = db.query(InvoiceModel).join(BusinessProfile).filter(
             BusinessProfile.user_id == user.id
         )
@@ -240,7 +218,7 @@ class InvoiceQuery:
                 language=client.language 
             )
         
-        invoices_typed_list = [Invoice(
+        return [Invoice(
             id=strawberry.ID(str(inv.id)),
             business_id=strawberry.ID(str(inv.business_id)),
             client_id=strawberry.ID(str(inv.client_id)),
@@ -273,15 +251,6 @@ class InvoiceQuery:
             created_at=inv.created_at,
             updated_at=inv.updated_at
         ) for inv in invoices]
-
-        json_data = json.dumps(
-        [inv.__dict__ for inv in invoices_typed_list], 
-        default=json_serial # <-- FIX APPLIED HERE
-    )
-        await redis_client.setex(cache_key, 300, json_data)
-        print(f"Storing result in cache key: {cache_key} with 300s TTL")
-
-        return invoices_typed_list
     
     @strawberry.field
     async def invoice_items(self, info: strawberry.Info, invoice_id: strawberry.ID) -> List[InvoiceItem]:

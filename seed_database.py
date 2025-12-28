@@ -14,6 +14,7 @@ import random
 from datetime import datetime, timedelta, date
 from decimal import Decimal
 import uuid
+from sqlalchemy import text
 
 from sqlalchemy.orm import Session
 from app.db.database import SessionLocal
@@ -153,8 +154,26 @@ def create_users(db: Session) -> list[User]:
     print(f"Preparing regular user: {user.email}")
     users.append(user)
     db.add(user)
+
+    # Create walker user
+    user = User(
+        id=str(uuid.uuid4()),
+        email="walkermule7@gmail.com",
+        password_hash=hash_password("User123!"),
+        first_name="Walker",
+        last_name="Mule",
+        phone=f"+1{random.randint(2000000000, 9999999999)}",
+        role=UserRole.USER,
+        status=UserStatus.ACTIVE,
+        email_verified=True,
+        created_at=random_datetime(100, 80),
+        updated_at=datetime.utcnow()
+    )
+    print(f"Preparing walker user: {user.email}")
+    users.append(user)
+    db.add(user)
     
-    print(f"✓ Prepared {len(users)} users")
+    print(f"[OK] Prepared {len(users)} users")
     return users
 
 
@@ -199,7 +218,7 @@ def create_business_profiles(db: Session, users: list[User]) -> list[BusinessPro
         )
         db.add(address)
     
-    print(f"✓ Prepared {len(businesses)} business profiles with addresses")
+    print(f"[OK] Prepared {len(businesses)} business profiles with addresses")
     return businesses
 
 
@@ -224,7 +243,7 @@ def create_categories(db: Session, businesses: list[BusinessProfile]) -> list[Ca
             categories.append(category)
             db.add(category)
     
-    print(f"✓ Prepared {len(categories)} categories")
+    print(f"[OK] Prepared {len(categories)} categories")
     return categories
 
 
@@ -256,7 +275,7 @@ def create_products(db: Session, businesses: list[BusinessProfile], categories: 
             products.append(product)
             db.add(product)
     
-    print(f"✓ Prepared {len(products)} products")
+    print(f"[OK] Prepared {len(products)} products")
     return products
 
 
@@ -328,7 +347,7 @@ def create_clients(db: Session, businesses: list[BusinessProfile]) -> list[Clien
                 )
                 db.add(contact)
     
-    print(f"✓ Prepared {len(clients)} clients with addresses and contacts")
+    print(f"[OK] Prepared {len(clients)} clients with addresses and contacts")
     return clients
 
 
@@ -452,7 +471,7 @@ def create_invoices(db: Session, businesses: list[BusinessProfile], clients: lis
             )
             invoice.amount_due = invoice.total_amount
     
-    print(f"✓ Prepared {len(invoices)} invoices with items")
+    print(f"[OK] Prepared {len(invoices)} invoices with items")
     return invoices
 
 
@@ -505,7 +524,7 @@ def create_payments(db: Session, invoices: list[Invoice], users: list[User]):
             db.add(payment)
             payment_counter += 1
     
-    print(f"✓ Prepared {len(payments)} payments")
+    print(f"[OK] Prepared {len(payments)} payments")
     return payments
 
 
@@ -556,16 +575,26 @@ def create_billing_plans(db: Session) -> list[BillingPlan]:
         }
     ]
     
+    current_plans = {p.plan_type: p for p in db.query(BillingPlan).all()}
+    plans = []
+
     for data in plan_data:
-        plan = BillingPlan(
-            id=str(uuid.uuid4()),
-            **data
-        )
-        plans.append(plan)
-        db.add(plan)
+        plan_type = data["plan_type"]
+        if plan_type in current_plans:
+            plan = current_plans[plan_type]
+            for key, value in data.items():
+                setattr(plan, key, value)
+            plans.append(plan)
+        else:
+            plan = BillingPlan(
+                id=str(uuid.uuid4()),
+                **data
+            )
+            plans.append(plan)
+            db.add(plan)
     
     db.commit()
-    print(f"✓ Created {len(plans)} billing plans")
+    print(f"[OK] Created {len(plans)} billing plans")
     return plans
 
 
@@ -593,17 +622,78 @@ def create_subscriptions(db: Session, users: list[User], plans: list[BillingPlan
         db.add(subscription)
     
     db.commit()
-    print(f"✓ Created {len(subscriptions)} subscriptions")
+    print(f"[OK] Created {len(subscriptions)} subscriptions")
     return subscriptions
 
 
+def clear_existing_data(db: Session):
+    """Clear existing seeded users and their data using raw SQL"""
+    emails_to_clear = [
+        "admin1@invoicegen.com", "admin2@invoicegen.com",
+        "accountant1@invoicegen.com", "accountant2@invoicegen.com",
+        "accountant3@invoicegen.com", "accountant4@invoicegen.com",
+        "accountant5@invoicegen.com", "accountant6@invoicegen.com",
+        "accountant7@invoicegen.com", "user@invoicegen.com",
+        "walkermule7@gmail.com"
+    ]
+    
+    users = db.query(User).filter(User.email.in_(emails_to_clear)).all()
+    if not users:
+        return
+        
+    user_ids = [u.id for u in users]
+    user_ids_str = ", ".join([f"'{uid}'" for uid in user_ids])
+    
+    print(f"Clearing data for {len(users)} seeded users via raw SQL...")
+    
+    # Get business IDs
+    businesses = db.query(BusinessProfile).filter(BusinessProfile.user_id.in_(user_ids)).all()
+    business_ids = [b.id for b in businesses]
+    business_ids_str = ", ".join([f"'{bid}'" for bid in business_ids]) if business_ids else "''"
+    
+    # Deletion sequence
+    queries = [
+        f"DELETE FROM payments WHERE created_by IN ({user_ids_str}) OR invoice_id IN (SELECT id FROM invoices WHERE business_id IN ({business_ids_str}))",
+        f"DELETE FROM invoice_items WHERE invoice_id IN (SELECT id FROM invoices WHERE business_id IN ({business_ids_str}))",
+        f"DELETE FROM invoice_reminders WHERE invoice_id IN (SELECT id FROM invoices WHERE business_id IN ({business_ids_str}))",
+        f"DELETE FROM invoices WHERE business_id IN ({business_ids_str})",
+        f"DELETE FROM quotes WHERE business_id IN ({business_ids_str})",
+        f"DELETE FROM expenses WHERE business_id IN ({business_ids_str})",
+        f"DELETE FROM tax_rates WHERE business_id IN ({business_ids_str})",
+        f"DELETE FROM client_contacts WHERE client_id IN (SELECT id FROM clients WHERE business_id IN ({business_ids_str}))",
+        f"DELETE FROM addresses WHERE addressable_type = 'client' AND addressable_id IN (SELECT id FROM clients WHERE business_id IN ({business_ids_str}))",
+        f"DELETE FROM clients WHERE business_id IN ({business_ids_str})",
+        f"DELETE FROM products WHERE business_id IN ({business_ids_str})",
+        f"DELETE FROM categories WHERE business_id IN ({business_ids_str})",
+        f"DELETE FROM addresses WHERE addressable_type = 'business_profile' AND addressable_id IN ({business_ids_str})",
+        f"DELETE FROM business_profiles WHERE user_id IN ({user_ids_str})",
+        f"DELETE FROM subscriptions WHERE user_id IN ({user_ids_str})",
+        f"DELETE FROM audit_logs WHERE user_id IN ({user_ids_str})",
+        f"DELETE FROM notifications WHERE user_id IN ({user_ids_str})",
+        f"DELETE FROM verification_codes WHERE user_id IN ({user_ids_str})",
+        f"DELETE FROM users WHERE id IN ({user_ids_str})"
+    ]
+    
+    for query in queries:
+        try:
+            db.execute(text(query))
+            db.commit() # Commit after each delete to ensure it actually happened
+        except Exception as e:
+            print(f"Query failed: {query[:50]}... Error: {e}")
+            db.rollback()
+    
+    print("Cleanup results: All done.")
+
 def seed_database():
     """Main seeding function"""
-    print("\n🌱 Starting database seeding...\n")
+    print("\nStarting database seeding...\n")
     
     db = SessionLocal()
     
     try:
+        # Clear existing data first
+        clear_existing_data(db)
+        
         # Create all data
         users = create_users(db)
         businesses = create_business_profiles(db, users)
@@ -619,7 +709,7 @@ def seed_database():
         
         # Commit all changes at once
         db.commit()
-        print("\n✅ Database seeding completed successfully!")
+        print("\nDatabase seeding completed successfully!")
         print(f"\nSummary:")
         print(f"  - Users: {len(users)} (2 admins, 7 accountants, 1 user)")
         print(f"  - Business Profiles: {len(businesses)}")
@@ -634,7 +724,7 @@ def seed_database():
         print(f"  User: user@invoicegen.com / User123!")
         
     except Exception as e:
-        print(f"\n❌ Error during seeding: {e}")
+        print(f"\nError during seeding: {e}")
         db.rollback()
         raise
     finally:

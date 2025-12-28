@@ -1,17 +1,17 @@
 import smtplib
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
-import os
+from app.core.config import settings
 
 def send_verification_email(to_email: str, code: str):
-    smtp_server = os.getenv("SMTP_SERVER", "smtp.gmail.com")
-    smtp_port = int(os.getenv("SMTP_PORT", "587"))
-    smtp_username = os.getenv("SMTP_USERNAME")
-    smtp_password = os.getenv("SMTP_PASSWORD")
-    smtp_from_email = os.getenv("SMTP_FROM_EMAIL", smtp_username)
+    smtp_server = settings.SMTP_SERVER
+    smtp_port = settings.SMTP_PORT
+    smtp_username = settings.SMTP_USERNAME
+    smtp_password = settings.SMTP_PASSWORD
+    smtp_from_email = settings.SMTP_FROM_EMAIL or smtp_username
 
     if not all([smtp_username, smtp_password]):
-        print("⚠️ SMTP credentials not found. Email not sent.")
+        print(" SMTP credentials not found. Email not sent.")
         return
 
     message = MIMEMultipart("alternative")
@@ -49,7 +49,7 @@ def send_verification_email(to_email: str, code: str):
             server.starttls()
             server.login(smtp_username, smtp_password)
             server.sendmail(smtp_from_email, to_email, message.as_string())
-        print(f"✅ Email sent to {to_email}")
+        print(f" Email sent to {to_email}")
     except Exception as e:
-        print(f"❌ Error sending email: {e}")
+        print(f" Error sending email: {e}")
         raise e # Re-raise to let the caller handle it

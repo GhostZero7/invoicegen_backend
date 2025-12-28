@@ -17,9 +17,11 @@ def get_db():
 
 @router.post("/register", response_model=Token)
 def register(user_data: UserCreate, db: Session = Depends(get_db)):
+    print(f" Register attempt for: '{user_data.email}'")
     # Check if user exists
     exists = db.query(User).filter(User.email == user_data.email).first()
     if exists:
+        print(f" Registration failed: Email already exists '{user_data.email}'")
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Email already registered"
@@ -41,6 +43,7 @@ def register(user_data: UserCreate, db: Session = Depends(get_db)):
     db.add(new_user)
     db.commit()
     db.refresh(new_user)
+    print(f" User registered successfully: {new_user.id}")
 
     # Create token
     token = create_access_token({"sub": str(new_user.id), "email": new_user.email})
@@ -48,7 +51,13 @@ def register(user_data: UserCreate, db: Session = Depends(get_db)):
 
 @router.post("/login", response_model=Token)
 def login(user_data: UserLogin, db: Session = Depends(get_db)):
+    print(f" Login attempt for: '{user_data.email}'")
     db_user = db.query(User).filter(User.email == user_data.email).first()
+    
+    if not db_user:
+        print(f" User not found in DB: '{user_data.email}'")
+    else:
+        print(f" User found. Hash invalid? {not verify_password(user_data.password, db_user.password_hash)}")
     
     if not db_user or not verify_password(user_data.password, db_user.password_hash):
         raise HTTPException(
@@ -86,8 +95,6 @@ def request_verification(
     from app.db.models.verification_code import VerificationCode
     from app.utils.email import send_verification_email
 
-    # ... existing code ...
-
     # Generate 6 digit code
     code = "".join([str(random.randint(0, 9)) for _ in range(6)])
     expires = datetime.utcnow() + timedelta(minutes=10)
@@ -106,7 +113,7 @@ def request_verification(
 
         # PRINT CODE to console for debugging/fallback
         print(f"\n\n==================================================")
-        print(f"🔑 VERIFICATION CODE FOR {request.email}: {code}")
+        print(f" VERIFICATION CODE FOR {request.email}: {code}")
         print(f"==================================================\n\n")
 
         # FILE FALLBACK
