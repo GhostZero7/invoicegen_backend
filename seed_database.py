@@ -113,6 +113,7 @@ def create_users(db: Session) -> list[User]:
             created_at=random_datetime(180, 150),
             updated_at=datetime.utcnow()
         )
+        print(f"Preparing admin: {user.email}")
         users.append(user)
         db.add(user)
     
@@ -131,6 +132,7 @@ def create_users(db: Session) -> list[User]:
             created_at=random_datetime(150, 100),
             updated_at=datetime.utcnow()
         )
+        print(f"Preparing accountant: {user.email}")
         users.append(user)
         db.add(user)
     
@@ -148,11 +150,11 @@ def create_users(db: Session) -> list[User]:
         created_at=random_datetime(100, 80),
         updated_at=datetime.utcnow()
     )
+    print(f"Preparing regular user: {user.email}")
     users.append(user)
     db.add(user)
     
-    db.commit()
-    print(f"✓ Created {len(users)} users")
+    print(f"✓ Prepared {len(users)} users")
     return users
 
 
@@ -160,7 +162,7 @@ def create_business_profiles(db: Session, users: list[User]) -> list[BusinessPro
     """Create business profiles for each user"""
     businesses = []
     
-    for i, user in enumerate(users):
+    for idx, user in enumerate(users):
         business = BusinessProfile(
             id=str(uuid.uuid4()),
             user_id=user.id,
@@ -170,8 +172,8 @@ def create_business_profiles(db: Session, users: list[User]) -> list[BusinessPro
             email=user.email,
             phone=user.phone,
             currency="USD",
-            invoice_prefix=f"INV-{i:02d}",
-            quote_prefix=f"QUO-{i:02d}",
+            invoice_prefix=f"INV{idx+1}",  # Unique prefix per business
+            quote_prefix=f"QUO{idx+1}",    # Unique prefix per business
             next_invoice_number=random.randint(1000, 2000),
             next_quote_number=random.randint(100, 500),
             payment_terms_default=random.choice(list(PaymentTerms)),
@@ -197,8 +199,7 @@ def create_business_profiles(db: Session, users: list[User]) -> list[BusinessPro
         )
         db.add(address)
     
-    db.commit()
-    print(f"✓ Created {len(businesses)} business profiles with addresses")
+    print(f"✓ Prepared {len(businesses)} business profiles with addresses")
     return businesses
 
 
@@ -223,8 +224,7 @@ def create_categories(db: Session, businesses: list[BusinessProfile]) -> list[Ca
             categories.append(category)
             db.add(category)
     
-    db.commit()
-    print(f"✓ Created {len(categories)} categories")
+    print(f"✓ Prepared {len(categories)} categories")
     return categories
 
 
@@ -256,8 +256,7 @@ def create_products(db: Session, businesses: list[BusinessProfile], categories: 
             products.append(product)
             db.add(product)
     
-    db.commit()
-    print(f"✓ Created {len(products)} products")
+    print(f"✓ Prepared {len(products)} products")
     return products
 
 
@@ -329,8 +328,7 @@ def create_clients(db: Session, businesses: list[BusinessProfile]) -> list[Clien
                 )
                 db.add(contact)
     
-    db.commit()
-    print(f"✓ Created {len(clients)} clients with addresses and contacts")
+    print(f"✓ Prepared {len(clients)} clients with addresses and contacts")
     return clients
 
 
@@ -454,8 +452,7 @@ def create_invoices(db: Session, businesses: list[BusinessProfile], clients: lis
             )
             invoice.amount_due = invoice.total_amount
     
-    db.commit()
-    print(f"✓ Created {len(invoices)} invoices with items")
+    print(f"✓ Prepared {len(invoices)} invoices with items")
     return invoices
 
 
@@ -508,8 +505,7 @@ def create_payments(db: Session, invoices: list[Invoice], users: list[User]):
             db.add(payment)
             payment_counter += 1
     
-    db.commit()
-    print(f"✓ Created {len(payments)} payments")
+    print(f"✓ Prepared {len(payments)} payments")
     return payments
 
 
@@ -621,6 +617,8 @@ def seed_database():
         plans = create_billing_plans(db)
         subscriptions = create_subscriptions(db, users, plans)
         
+        # Commit all changes at once
+        db.commit()
         print("\n✅ Database seeding completed successfully!")
         print(f"\nSummary:")
         print(f"  - Users: {len(users)} (2 admins, 7 accountants, 1 user)")

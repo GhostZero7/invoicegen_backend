@@ -7,15 +7,21 @@ Base = declarative_base()
 
 # Build connection arguments based on database type
 connect_args = {}
-if "neon.tech" in settings.DATABASE_URL or "postgresql" in settings.DATABASE_URL:
-    # For PostgreSQL/Neon, use sslmode in the URL or configure SSL properly
+if "neon.tech" in settings.DATABASE_URL:
+    # For Neon, require SSL
     connect_args = {
         # "sslmode": "require",
     }
+elif "postgresql" in settings.DATABASE_URL and "sslmode=" not in settings.DATABASE_URL:
+    # For other PostgreSQL without specified sslmode, default to require if not localhost
+    if "localhost" not in settings.DATABASE_URL and "127.0.0.1" not in settings.DATABASE_URL:
+        connect_args = {
+            "sslmode": "require",
+        }
 
 engine = create_engine(
     settings.DATABASE_URL,
-    echo=True,  # Set to False in production
+    echo=False,  # Set to False in production
     pool_size=5,
     max_overflow=10,
     pool_pre_ping=True,
