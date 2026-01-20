@@ -3,6 +3,7 @@ from .business import BusinessQuery
 from .client import ClientQuery
 from .invoice import InvoiceQuery
 from .payment import PaymentQuery
+from .messages import MessageQuery
 
 __all__ = [
     "UserQuery",
@@ -10,4 +11,5 @@ __all__ = [
     "ClientQuery",
     "InvoiceQuery",
     "PaymentQuery",
+    "MessageQuery"
 ]
