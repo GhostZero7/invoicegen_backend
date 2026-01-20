@@ -64,6 +64,11 @@ from .auth import (
     VerificationEmail
 )
 
+from .messages import (
+    Message,
+    MessageInput
+)
+
 __all__ = [
     "User",
     "UserRole",
@@ -111,5 +116,7 @@ __all__ = [
     "WaitlistStats",
     "Auth",
     "LoginUserInput",
-    "VerificationEmail"
+    "VerificationEmail",
+    "Message",
+    "MessageInput"
 ]

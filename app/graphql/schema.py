@@ -17,8 +17,10 @@ from app.graphql.mutations.product import ProductMutation
 from app.graphql.mutations.category import CategoryMutation
 from app.graphql.mutations.waitlist import WaitlistMutation
 from app.graphql.mutations.auth import AuthMutation
+from app.graphql.queries.messages import MessageQuery
+
 @strawberry.type
-class Query(UserQuery, BusinessQuery, ClientQuery, InvoiceQuery, PaymentQuery, ProductQuery, CategoryQuery, WaitlistQuery, BillingQuery):
+class Query(UserQuery, BusinessQuery, ClientQuery, InvoiceQuery, PaymentQuery, ProductQuery, CategoryQuery, WaitlistQuery, BillingQuery, MessageQuery):
     """Root Query combining all query types"""
     pass
 
