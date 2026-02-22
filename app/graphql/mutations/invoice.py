@@ -3,8 +3,10 @@ from sqlalchemy.orm import Session
 from datetime import datetime
 import uuid
 from app.graphql.types.invoice import Invoice, CreateInvoiceInput, UpdateInvoiceInput
+from app.graphql.types.client import Client
 from app.db.models.invoice import Invoice as InvoiceModel, InvoiceItem as InvoiceItemModel
 from app.db.models.business import BusinessProfile
+from app.db.models.client import Client as ClientModel
 from app.services.billing_service import BillingService
 
 @strawberry.type
@@ -131,6 +133,11 @@ class InvoiceMutation:
         db.commit()
         db.refresh(invoice)
         
+        # Fetch the client
+        client = db.query(ClientModel).filter(ClientModel.id == str(input.client_id)).first()
+        if not client:
+            raise Exception("Client not found")
+        
         return Invoice(
             id=strawberry.ID(str(invoice.id)),
             business_id=strawberry.ID(str(invoice.business_id)),
@@ -226,6 +233,7 @@ class InvoiceMutation:
             id=strawberry.ID(str(invoice.id)),
             business_id=strawberry.ID(str(invoice.business_id)),
             client_id=strawberry.ID(str(invoice.client_id)),
+            client=None,
             invoice_number=invoice.invoice_number,
             reference_number=invoice.reference_number,
             purchase_order_number=invoice.purchase_order_number,
